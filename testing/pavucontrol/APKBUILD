@@ -1,0 +1,28 @@
+# Contributor: Jan Tatje <jan@jnt.io>
+# Maintainer: Jan Tatje <jan@jnt.io>
+pkgname=pavucontrol
+pkgver=3.0
+pkgrel=0
+pkgdesc="PulseAudio Volume Control (pavucontrol) is a simple GTK based volume control tool (mixer) for the PulseAudio sound server."
+url="https://freedesktop.org/software/pulseaudio/pavucontrol/"
+arch="x86_64"
+license="GPL2"
+depends="gtkmm3 libcanberra-gtk3 pulseaudio"
+makedepends="gtkmm3-dev libcanberra-dev pulseaudio-dev"
+install=""
+subpackages=""
+source="http://freedesktop.org/software/pulseaudio/pavucontrol/pavucontrol-3.0.tar.xz"
+builddir="$srcdir/$pkgname-$pkgver"
+
+build() {
+	cd "$builddir"
+	./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="3562fc50e5f60c6b6280c2d524e13cf44114bf481e5ec98b8714c7c2f162d0332179ebcf4c5a78d86f511de857bdc3aa7415e1548e0c10d4582b5958c4cacae9  pavucontrol-3.0.tar.xz"

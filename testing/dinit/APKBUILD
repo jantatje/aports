@@ -1,0 +1,37 @@
+# Contributor: Jan Tatje <jan@jnt.io>
+# Maintainer: Jan Tatje <jan@jnt.io>
+pkgname=dinit
+pkgver=0.4.0
+pkgrel=0
+pkgdesc="'Dinit' is a service supervisor with dependency support which can also act as the system 'init' program."
+url="://github.com/davmac314/dinit"
+arch="all"
+license="apache-2.0"
+depends=""
+makedepends=""
+install=""
+subpackages="$pkgname-doc"
+source="$pkgname-$pkgver.tar.gz::https://github.com/davmac314/dinit/archive/v${pkgver}.tar.gz"
+builddir="$srcdir/$pkgname-$pkgver"
+
+prepare() {
+	cd "$builddir"
+	sed s/^SANITIZEOPTS=-fsanitize=address,undefined/SANITIZEOPTS=/ -i mconfig
+}
+
+build() {
+	cd "$builddir"
+	make -j1
+}
+
+check() {
+	cd "$builddir"
+	make check -j1
+}
+
+package() {
+	cd "$builddir"
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="c84946e0f5803756373ed4ec45cf9d37a83b48f4710c775914b10b7b9b277d269a3d532190f4b7c742ae9563698c3d3aceed54e825ead47a767435906f9c8094  dinit-0.4.0.tar.gz"

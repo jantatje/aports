@@ -1,0 +1,69 @@
+# Contributor: Jan Tatje <jan@jnt.io>
+# Maintainer: Jan Tatje <jan@jnt.io>
+pkgname=qbittorrent
+pkgver=4.1.6
+pkgrel=3
+_commit=1831f71cc452b164224d8b6399a8130d6d5b1c24
+pkgdesc="qBittorrent client"
+url="https://www.qbittorrent.org/"
+arch="x86_64"
+license="GPL2"
+options="!check" # qBittorrent has no tests
+depends="boost qt5-qtbase qt5-qtsvg libtorrent-rasterbar"
+makedepends="boost-dev qt5-qtbase-dev qt5-qtsvg-dev qt5-qttools-dev libtorrent-rasterbar-dev"
+install="$pkgname.pre-install"
+subpackages="$pkgname-nox:nox $pkgname-nox-openrc $pkgname-doc"
+source="
+	qbittorrent-nox.initd
+	qbittorrent-nox.confd
+	https://github.com/qbittorrent/qBittorrent/archive/$_commit.tar.gz
+	"
+builddir="$srcdir/"
+
+prepare() {
+	cp -r "$builddir/qBittorrent-$_commit" "$builddir/qBittorrent-$_commit-nox"
+}
+
+build() {
+	#build qbittorrent with gui
+	cd "$builddir/qBittorrent-$_commit"
+	./configure --disable-qt-dbus --prefix=/usr
+	make
+	#build qbittorrent without gui
+	cd "$builddir/qBittorrent-$_commit-nox"
+	./configure --disable-gui --disable-qt-dbus --prefix=/usr
+	make
+}
+
+package() {
+	cd "$builddir/qBittorrent-$_commit"
+
+	make INSTALL_ROOT="$pkgdir" install
+
+	install -m755 -D "$srcdir"/$pkgname-nox.initd \
+		"$pkgdir"/etc/init.d/$pkgname-nox
+	install -m644 -D "$srcdir"/$pkgname-nox.confd \
+		"$pkgdir"/etc/conf.d/$pkgname-nox
+
+	# also include manpage for nox in default doc
+	cp "doc/qbittorrent-nox.1" "$pkgdir"/usr/share/man/man1/qbittorrent-nox.1
+}
+
+nox() {
+	cd "$builddir/qBittorrent-$_commit-nox"
+	pkgdesc="qBittorrent client (webui only)"
+	depends="boost qt5-qtbase libtorrent-rasterbar"
+	
+	make INSTALL_ROOT="$subpkgdir" install
+
+	echo $subpkgdir
+	echo $pkgdir
+
+	# delete manpage duplicate
+	rm "$subpkgdir"/usr/share/man/man1/qbittorrent-nox.1
+	rmdir -p --ignore-fail-on-non-empty "$subpkgdir"/usr/share/man/man1/
+}
+
+sha512sums="310df13ca8249e2ed57b7490ffa8f6beb0b273d856a62eeb87d47b7c20c531224c03c07124c3b9ac287c00dd9c139180c39933ee33dcb1a8a6ec1f67605dcede  qbittorrent-nox.initd
+999e58bcf0a528f88655611cb7d0ec2bd5f0a1aed1696b71be27e24a1708112540afa7fb37688ec865de1d9c7af6e7a2293773790bd8941bb94a1dc1f9ebe95e  qbittorrent-nox.confd
+5f6abfd8a9345e9972554ee55d79c2263ca80880ad3357540f13c6bd9337780d836a0b1c287b6c051f466eb98e380e6cee5b9381a1f2430cbc37643cd2386a40  1831f71cc452b164224d8b6399a8130d6d5b1c24.tar.gz"
